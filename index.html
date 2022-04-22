@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASM4</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+<body>
+  <nav class="navbar bg-lime-500">
+    <div class="container-fluid">
+      <p class="text-white text-2xl md:text-3xl font-bold">News</p>
+      <form class="d-flex">
+        <input id="search" class="form-control me-1 " type="search" placeholder="Search" aria-label="Search">
+        <button class="btn bg-white" type="submit">
+            <i class="fas fa-search"></i>
+        </button>
+      </form>
+    </div>
+  </nav>
+  <p id="time" class="container px-1 md:px-4 italic"></p> 
+  <p id="seconds" class="container px-1 md:px-4 italic"></p>
+  <div class="container px-1 md:px-4" id="container">
+  </div>
+  
+  <script>
+    const xhr = new XMLHttpRequest();
+    //Time to search
+    const startTime = new Date();
+    var results = '';
+    loading();
+    const endTime = new Date();
+    const totalTime = endTime - startTime;
+    document.getElementById('seconds').innerHTML = `About ${totalTime} seconds`;
+    function loading() {
+      xhr.open("GET", "https://gnews.io/api/v4/top-headlines?&token=57d02282db3904a37a074c653c801818", true);
+      xhr.send();
+      xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          const data = JSON.parse(xhr.responseText);
+          results = data.totalArticles;
+          let html = data.articles.map(function(x) {
+            return `
+                    <div class="news flex h-28 md:h-56 mt-3 ">
+                      <div class="image w-2/5 md:w-1/4 pr-2 md:pr-4">
+                          <a href=${x.url}><img src=${x.image} class="h-full w-full "></a>
+                      </div>
+                      <div class="text w-3/5 md:w-3/4">
+                          <h5 class="font-bold md:text-3xl truncate ... "><a href=${x.url} class="hover:text-lime-600 ">${x.title}</a></h5>
+                          <p class="italic leading-10  ">${x.publishedAt}</p>
+                          <p class=" truncate ...">${x.description}</p>
+                      </div>
+                    </div>`
+          });
+          let htmls = html.join('');
+          document.getElementById("container").innerHTML = htmls;
+          document.getElementById('time').innerHTML = `Approximately ${results} results`; 
+        }
+      }
+    }
+    $(".btn").click(function (e) {
+      e.preventDefault();
+      var uri = encodeURI(document.getElementById("search").value);
+      xhr.open("GET", `https://gnews.io/api/v4/search?q=${uri}&token=57d02282db3904a37a074c653c801818`, true);
+      xhr.send();
+      xhr.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          const data = JSON.parse(xhr.responseText);
+          let html = data.articles.map(function(x) {
+            return `
+                    <div class="news flex h-28 md:h-56 mt-3 ">
+                      <div class="image w-2/5 md:w-1/4 pr-2 md:pr-4">
+                          <a href=${x.url}><img src=${x.image} class="h-full w-full "></a>
+                      </div>
+                      <div class="text w-3/5 md:w-3/4">
+                          <h5 class="font-bold md:text-3xl truncate ... "><a href=${x.url} class="hover:text-lime-600 ">${x.title}</a></h5>
+                          <p class="italic leading-10  ">${x.publishedAt}</p>
+                          <p class=" truncate ...">${x.description}</p>
+                      </div>
+                    </div>`
+          });
+          let htmls = html.join('');
+          document.getElementById("container").innerHTML = htmls;
+        }
+      }
+    })
+  
+  </script>
+</body>
+</html>
